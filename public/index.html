@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery</title>
+    <style>
+        :root {
+            --background-color: #f4f7f6;
+            --text-color: #333;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --border-color: #ddd;
+            --card-background: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --error-color: #dc3545;
+            --success-color: #28a745;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: #282c34;
+                --text-color: #e0e0e0;
+                --primary-color: #61dafb;
+                --secondary-color: #9e9e9e;
+                --border-color: #444;
+                --card-background: #3a3f47;
+                --shadow-color: rgba(0, 0, 0, 0.3);
+                --error-color: #ff6b6b;
+                --success-color: #4caf50;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--background-color);
+            align-items: center;
+        }
+
+        .upload-section input[type="file"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            cursor: pointer;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .upload-section button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .upload-section button:hover {
+            background-color: #0056b3;
+        }
+
+        .upload-section button:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .message.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px var(--shadow-color);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .gallery-item-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .gallery-item-info h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            word-break: break-word;
+        }
+
+        .gallery-item-info p {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .gallery-item-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .gallery-item-actions button {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .gallery-item-actions button:hover {
+            background-color: #c82333;
+        }
+
+        .empty-gallery {
+            text-align: center;
+            padding: 50px;
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .upload-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .upload-section input[type="file"] {
+                max-width: none;
+            }
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Photo Gallery</h1>
+
+        <div class="upload-section">
+            <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/gif, image/webp">
+            <button id="uploadButton" disabled>Upload Image</button>
+            <div id="uploadMessage" class="message" role="status" aria-live="polite"></div>
+        </div>
+
+        <div id="gallery" class="gallery">
+            <p class="empty-gallery" id="emptyGalleryMessage">No images uploaded yet. Upload one to get started!</p>
+        </div>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const uploadButton = document.getElementById('uploadButton');
+        const uploadMessage = document.getElementById('uploadMessage');
+        const galleryDiv = document.getElementById('gallery');
+        const emptyGalleryMessage = document.getElementById('emptyGalleryMessage');
+
+        let selectedFile = null;
+
+        imageUpload.addEventListener('change', (event) => {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                uploadButton.disabled = false;
+                displayMessage('', '');
+            } else {
+                uploadButton.disabled = true;
+            }
+        });
+
+        uploadButton.addEventListener('click', uploadImage);
+
+        async function uploadImage() {
+            if (!selectedFile) {
+                displayMessage('Please select a file to upload.', 'error');
+                return;
+            }
+
+            uploadButton.disabled = true;
+            displayMessage('Uploading...', '');
+
+            try {
+                const response = await fetch('/upload?name=' + encodeURIComponent(selectedFile.name), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': selectedFile.type || 'application/octet-stream'
+                    },
+                    body: selectedFile
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+                displayMessage('Image uploaded successfully!', 'success');
+                imageUpload.value = ''; // Clear the input
+                selectedFile = null;
+                uploadButton.disabled = true;
+                await loadImages(); // Reload gallery to show new image
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                displayMessage('Error uploading image: ' + error.message, 'error');
+            } finally {
+                uploadButton.disabled = false;
+            }
+        }
+
+        async function loadImages() {
+            try {
+                const response = await fetch('/images');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch images');
+                }
+                const images = await response.json();
+                renderGallery(images);
+            } catch (error) {
+                console.error('Error loading images:', error);
+                displayMessage('Failed to load images: ' + error.message, 'error');
+            }
+        }
+
+        function renderGallery(images) {
+            galleryDiv.innerHTML = ''; // Clear existing images
+            if (images.length === 0) {
+                emptyGalleryMessage.style.display = 'block';
+                galleryDiv.appendChild(emptyGalleryMessage);
+                return;
+            }
+            emptyGalleryMessage.style.display = 'none';
+
+            images.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
+
+            images.forEach(image => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'gallery-item';
+                itemDiv.setAttribute('data-key', image.key);
+
+                const img = document.createElement('img');
+                img.src = '/download?key=' + encodeURIComponent(image.key);
+                img.alt = 'Uploaded image: ' + image.name;
+                img.loading = 'lazy';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'gallery-item-info';
+
+                const name = document.createElement('h3');
+                name.textContent = image.name;
+
+                const size = document.createElement('p');
+                size.textContent = 'Size: ' + formatBytes(image.size);
+
+                const date = document.createElement('p');
+                date.textContent = 'Uploaded: ' + new Date(image.createdAt).toLocaleDateString();
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'gallery-item-actions';
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', () => deleteImage(image.key));
+
+                actionsDiv.appendChild(deleteButton);
+                infoDiv.appendChild(name);
+                infoDiv.appendChild(size);
+                infoDiv.appendChild(date);
+                infoDiv.appendChild(actionsDiv);
+                itemDiv.appendChild(img);
+                itemDiv.appendChild(infoDiv);
+
+                galleryDiv.appendChild(itemDiv);
+            });
+        }
+
+        async function deleteImage(key) {
+            if (!confirm('Are you sure you want to delete this image?')) {
+                return;
+            }
+
+            displayMessage('Deleting...', '');
+
+            try {
+                const response = await fetch('/images?key=' + encodeURIComponent(key), {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Delete failed');
+                }
+
+                displayMessage('Image deleted successfully!', 'success');
+                await loadImages(); // Reload gallery
+
+            } catch (error) {
+                console.error('Delete error:', error);
+                displayMessage('Error deleting image: ' + error.message, 'error');
+            }
+        }
+
+        function displayMessage(message, type) {
+            uploadMessage.textContent = message;
+            uploadMessage.className = 'message'; // Reset classes
+            if (type) {
+                uploadMessage.classList.add(type);
+            }
+            if (message) {
+                uploadMessage.setAttribute('aria-hidden', 'false');
+            } else {
+                uploadMessage.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+</body>
+</html>
